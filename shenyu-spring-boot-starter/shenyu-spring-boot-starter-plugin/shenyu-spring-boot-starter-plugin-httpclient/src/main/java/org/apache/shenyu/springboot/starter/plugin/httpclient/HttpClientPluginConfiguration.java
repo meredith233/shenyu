@@ -17,10 +17,10 @@
 
 package org.apache.shenyu.springboot.starter.plugin.httpclient;
 
+import org.apache.shenyu.common.constant.Constants;
 import org.apache.shenyu.plugin.api.ShenyuPlugin;
 import org.apache.shenyu.plugin.httpclient.NettyHttpClientPlugin;
 import org.apache.shenyu.plugin.httpclient.WebClientPlugin;
-import org.apache.shenyu.plugin.httpclient.config.DuplicateResponseHeaderProperties;
 import org.apache.shenyu.plugin.httpclient.config.HttpClientProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -52,17 +52,6 @@ public class HttpClientPluginConfiguration {
     @ConfigurationProperties(prefix = "shenyu.httpclient")
     public HttpClientProperties httpClientProperties() {
         return new HttpClientProperties();
-    }
-    
-    /**
-     * http response duplicate response headers config.
-     *
-     * @return the duplicate response header properties
-     */
-    @Bean
-    @ConfigurationProperties(prefix = "shenyu.duplicate-response-header")
-    public DuplicateResponseHeaderProperties responseHeaderProperties() {
-        return new DuplicateResponseHeaderProperties();
     }
 
     /**
@@ -112,17 +101,16 @@ public class HttpClientPluginConfiguration {
         @Bean
         public ShenyuPlugin webClientPlugin(
                 final HttpClientProperties properties,
-                final ObjectProvider<HttpClient> httpClient,
-                final DuplicateResponseHeaderProperties responseHeaderProperties) {
+                final ObjectProvider<HttpClient> httpClient) {
             WebClient webClient = WebClient.builder()
                     // fix Exceeded limit on max bytes to buffer
                     // detail see https://stackoverflow.com/questions/59326351/configure-spring-codec-max-in-memory-size-when-using-reactiveelasticsearchclient
                     .exchangeStrategies(ExchangeStrategies.builder()
-                            .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(properties.getMaxInMemorySize() * 1024 * 1024))
+                            .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(properties.getMaxInMemorySize() * Constants.BYTES_PER_MB))
                             .build())
                     .clientConnector(new ReactorClientHttpConnector(Objects.requireNonNull(httpClient.getIfAvailable())))
                     .build();
-            return new WebClientPlugin(webClient, responseHeaderProperties);
+            return new WebClientPlugin(webClient);
         }
     }
 
@@ -140,9 +128,8 @@ public class HttpClientPluginConfiguration {
          * @return the shenyu plugin
          */
         @Bean
-        public ShenyuPlugin nettyHttpClientPlugin(final ObjectProvider<HttpClient> httpClient,
-                                                  final DuplicateResponseHeaderProperties responseHeaderProperties) {
-            return new NettyHttpClientPlugin(httpClient.getIfAvailable(), responseHeaderProperties);
+        public ShenyuPlugin nettyHttpClientPlugin(final ObjectProvider<HttpClient> httpClient) {
+            return new NettyHttpClientPlugin(httpClient.getIfAvailable());
         }
     }
 }

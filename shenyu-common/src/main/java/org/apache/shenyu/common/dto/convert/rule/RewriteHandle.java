@@ -38,6 +38,11 @@ public class RewriteHandle {
      * percentage of rewritten traffic.
      */
     private Integer percentage;
+    
+    /**
+     * rewrite the original metadata.
+     */
+    private Boolean rewriteMetaData;
 
     /**
      * get regex.
@@ -92,22 +97,41 @@ public class RewriteHandle {
     public void setPercentage(final Integer percentage) {
         this.percentage = percentage;
     }
-
+    
+    /**
+     * get rewrite meta data status.
+     *
+     * @return rewrite meta data status
+     */
+    public Boolean getRewriteMetaData() {
+        return rewriteMetaData;
+    }
+    
+    /**
+     * set rewrite meta data.
+     *
+     * @param rewriteMetaData status
+     */
+    public void setRewriteMetaData(final Boolean rewriteMetaData) {
+        this.rewriteMetaData = rewriteMetaData;
+    }
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (Objects.isNull(o) || getClass() != o.getClass()) {
             return false;
         }
         RewriteHandle that = (RewriteHandle) o;
-        return Objects.equals(regex, that.regex) && Objects.equals(replace, that.replace);
+        return Objects.equals(regex, that.regex) && Objects.equals(replace, that.replace)
+                && Objects.equals(rewriteMetaData, that.rewriteMetaData);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(regex, replace);
+        return Objects.hash(regex, replace, rewriteMetaData);
     }
 
     @Override
@@ -121,6 +145,9 @@ public class RewriteHandle {
                 + '\''
                 + ", percentage='"
                 + percentage
+                + '\''
+                + ", rewriteMetaData='"
+                + rewriteMetaData
                 + '\''
                 + '}';
     }

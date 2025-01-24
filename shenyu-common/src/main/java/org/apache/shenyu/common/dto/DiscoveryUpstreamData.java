@@ -17,7 +17,10 @@
 
 package org.apache.shenyu.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.sql.Timestamp;
+import java.util.Objects;
 
 public class DiscoveryUpstreamData {
 
@@ -29,11 +32,13 @@ public class DiscoveryUpstreamData {
     /**
      * created time.
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp dateCreated;
 
     /**
      * updated time.
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp dateUpdated;
 
 
@@ -66,6 +71,11 @@ public class DiscoveryUpstreamData {
      * props.
      */
     private String props;
+
+    /**
+     * namespaceId.
+     */
+    private String namespaceId;
 
 
     /**
@@ -231,6 +241,45 @@ public class DiscoveryUpstreamData {
     }
 
     /**
+     * get namespaceId.
+     *
+     * @return namespaceId
+     */
+    public String getNamespaceId() {
+        return namespaceId;
+    }
+
+    /**
+     * set namespaceId.
+     *
+     * @param namespaceId namespaceId
+     */
+    public void setNamespaceId(final String namespaceId) {
+        this.namespaceId = namespaceId;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (Objects.isNull(o) || getClass() != o.getClass()) {
+            return false;
+        }
+        DiscoveryUpstreamData that = (DiscoveryUpstreamData) o;
+        return status == that.status && weight == that.weight && Objects.equals(id, that.id)
+                && Objects.equals(dateCreated, that.dateCreated) && Objects.equals(dateUpdated, that.dateUpdated)
+                && Objects.equals(discoveryHandlerId, that.discoveryHandlerId) && Objects.equals(protocol, that.protocol)
+                && Objects.equals(url, that.url) && Objects.equals(props, that.props)
+                && Objects.equals(namespaceId, that.namespaceId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dateCreated, dateUpdated, discoveryHandlerId, protocol, url, status, weight, props, namespaceId);
+    }
+
+    /**
      * class builder.
      *
      * @return Builder
@@ -258,6 +307,8 @@ public class DiscoveryUpstreamData {
         private int weight;
 
         private String props;
+
+        private String namespaceId;
 
         private Builder() {
         }
@@ -371,6 +422,17 @@ public class DiscoveryUpstreamData {
         }
 
         /**
+         * build namespaceId.
+         *
+         * @param namespaceId namespaceId
+         * @return this
+         */
+        public Builder namespaceId(final String namespaceId) {
+            this.namespaceId = namespaceId;
+            return this;
+        }
+
+        /**
          * build new Object.
          *
          * @return DiscoveryUpstreamData
@@ -386,6 +448,7 @@ public class DiscoveryUpstreamData {
             discoveryUpstreamData.setStatus(status);
             discoveryUpstreamData.setWeight(weight);
             discoveryUpstreamData.setProps(props);
+            discoveryUpstreamData.setNamespaceId(namespaceId);
             return discoveryUpstreamData;
         }
     }

@@ -41,10 +41,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -118,7 +118,7 @@ public class ResourceController {
      * @return {@linkplain ShenyuAdminResult}
      */
     @GetMapping("/{id}")
-    @RequiresPermissions(value = {"system:resource:list", "system:resource:editMenu", "system:resource:list"}, logical = Logical.OR)
+    @RequiresPermissions(value = {"system:resource:list", "system:resource:editMenu"}, logical = Logical.OR)
     public ShenyuAdminResult detailResource(@PathVariable("id") final String id) {
         return Optional.ofNullable(resourceService.findById(id))
                 .map(item -> ShenyuAdminResult.success(ShenyuResultMessage.DETAIL_SUCCESS, item))

@@ -76,10 +76,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*" # or health,info
-
-
+        include:
+          - 'health'
+          - 'info'
 shenyu:
+  namespace: 649330b6-c2d7-4edc-be8e-8a54df9eb385
   selectorMatchCache:
     ## selector L1 cache
     cache:
@@ -94,7 +95,7 @@ shenyu:
   ruleMatchCache:
     ## rule L1 cache
     cache:
-      enabled: true
+      enabled: false
       initialCapacity: 10000 # initial capacity in cache
       maximumSize: 65536 # max size in cache
     ## rule L2 cache, use trie as L2 cache
@@ -110,7 +111,6 @@ shenyu:
       workerCount: 8
       accessLog: false
       serverSocketChannel:
-        soRcvBuf: 87380
         soBackLog: 128
         soReuseAddr: false
         connectTimeoutMillis: 10000
@@ -126,8 +126,6 @@ shenyu:
         soReuseAddr: false
         soLinger: -1
         tcpNoDelay: true
-        soRcvBuf: 87380
-        soSndBuf: 16384
         ipTos: 0
         allowHalfClosure: false
         connectTimeoutMillis: 10000
@@ -195,10 +193,6 @@ shenyu:
 #      selectCount: 1
 #      workerCount: 8
 #      daemon: true
-  duplicate-response-header:
-    strategy: RETAIN_FIRST
-    headers:
-      - Access-Control-Allow-Origin
   register:
     enabled: false
     registerType: zookeeper #etcd #consul
@@ -255,6 +249,7 @@ shenyu:
 #      namespace: 1c10d748-af86-43b9-8265-75f487d20c6c
 #      username:
 #      password:
+#      context-path: nacos
 #      acm:
 #        enabled: false
 #        endpoint: acm.aliyun.com
@@ -287,7 +282,7 @@ shenyu:
       - /actuator
       - /health_check
   alert:
-    enabled: true
+    enabled: false
     admins: localhost:9095
   extPlugin:
     path:
@@ -350,3 +345,4 @@ logging:
     org.springframework.web.reactive: info
     reactor.ipc.netty: info
     reactor.netty: info
+    org.apache.shenyu.plugin.api.ShenyuPlugin: info

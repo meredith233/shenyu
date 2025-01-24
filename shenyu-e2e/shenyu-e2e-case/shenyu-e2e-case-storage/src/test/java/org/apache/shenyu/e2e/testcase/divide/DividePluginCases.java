@@ -31,6 +31,7 @@ import org.apache.shenyu.e2e.engine.scenario.specification.ScenarioSpec;
 
 import java.util.List;
 
+import static org.apache.shenyu.e2e.constant.Constants.SYS_DEFAULT_NAMESPACE_NAMESPACE_ID;
 import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newCondition;
 import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newConditions;
 import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newDivideRuleHandle;
@@ -39,11 +40,12 @@ import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newSelectorBui
 import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newUpstreamsBuilder;
 import static org.apache.shenyu.e2e.engine.scenario.function.HttpCheckers.exists;
 import static org.apache.shenyu.e2e.engine.scenario.function.HttpCheckers.notExists;
+import static org.apache.shenyu.e2e.template.ResourceDataTemplate.newBindingData;
 import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 
 public class DividePluginCases implements ShenYuScenarioProvider {
     private static final String ANYTHING = "/anything";
-    
+
     @Override
     public List<ScenarioSpec> get() {
         return Lists.newArrayList(
@@ -57,7 +59,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 testDivideWithMethodDelete()
         );
     }
-    
+
     private ShenYuScenarioSpec testDivideWithUriEquals() {
         return ShenYuScenarioSpec.builder()
                 .name("single-divide uri =]")
@@ -67,10 +69,13 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                         newSelectorBuilder("httpbin", Plugin.DIVIDE)
                                                 .handle(newUpstreamsBuilder("httpbin.org"))
                                                 .conditionList(newConditions(ParamType.URI, Operator.EQUAL, ANYTHING))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(newConditions(ParamType.URI, Operator.EQUAL, ANYTHING))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(ANYTHING))
@@ -88,7 +93,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(ANYTHING)).build())
                 .build();
     }
-    
+
     /**
      * test divide with uri path pattern.
      * @return ShenYuScenarioSpec
@@ -102,10 +107,13 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                         newSelectorBuilder("httpbin", Plugin.DIVIDE)
                                                 .handle(newUpstreamsBuilder("httpbin.org"))
                                                 .conditionList(newConditions(ParamType.URI, Operator.PATH_PATTERN, "/anything/xx/**"))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(newConditions(ParamType.URI, Operator.PATH_PATTERN, "/anything/xx/**"))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(ANYTHING + "/xx/yyy"))
@@ -126,7 +134,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(ANYTHING + "/xx/yyy")).build())
                 .build();
     }
-    
+
     /**
      * test divide with uri start with.
      * @return ShenYuScenarioSpec
@@ -140,10 +148,13 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                         newSelectorBuilder("httpbin", Plugin.DIVIDE)
                                                 .handle(newUpstreamsBuilder("httpbin.org"))
                                                 .conditionList(newConditions(ParamType.URI, Operator.STARTS_WITH, ANYTHING + "/xx"))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(newConditions(ParamType.URI, Operator.STARTS_WITH, ANYTHING + "/xx"))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(ANYTHING + "/xx"))
@@ -163,7 +174,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(ANYTHING + "/xx")).build())
                 .build();
     }
-    
+
     /**
      * test divide with end with.
      * @return ShenYuScenarioSpec
@@ -177,7 +188,9 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                         newSelectorBuilder("httpbin", Plugin.DIVIDE)
                                                 .handle(newUpstreamsBuilder("httpbin.org"))
                                                 .conditionList(newConditions(ParamType.URI, Operator.ENDS_WITH, "/200"))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(newConditions(ParamType.URI, Operator.ENDS_WITH, "/200"))
@@ -202,7 +215,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(ANYTHING + "/200")).build())
                 .build();
     }
-    
+
     /**
      * test divide with method get.
      * @return ShenYuScenarioSpec
@@ -219,13 +232,16 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "GET"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(Lists.newArrayList(
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "GET"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(Method.GET, ANYTHING))
@@ -246,7 +262,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(Method.GET, ANYTHING)).build())
                 .build();
     }
-    
+
     /**
      * test divide with method post.
      * @return ShenYuScenarioSpec
@@ -263,13 +279,16 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "POST"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(Lists.newArrayList(
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "POST"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(Method.POST, ANYTHING))
@@ -290,7 +309,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(Method.POST, ANYTHING)).build())
                 .build();
     }
-    
+
     /**
      * test divide with method put.
      * @return ShenYuScenarioSpec
@@ -307,13 +326,16 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "PUT"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(Lists.newArrayList(
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "PUT"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(Method.PUT, ANYTHING))
@@ -334,7 +356,7 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                 .afterEachSpec(ShenYuAfterEachSpec.builder().deleteWaiting(notExists(Method.PUT, ANYTHING)).build())
                 .build();
     }
-    
+
     /**
      * test divide with method delete.
      * @return ShenYuScenarioSpec
@@ -351,13 +373,16 @@ public class DividePluginCases implements ShenYuScenarioProvider {
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "DELETE"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build(),
+                                        newBindingData("httpbin", Plugin.DIVIDE.getAlias(), "httpbin.org"),
                                         newRuleBuilder("rule")
                                                 .handle(newDivideRuleHandle())
                                                 .conditionList(Lists.newArrayList(
                                                         newCondition(ParamType.METHOD, Operator.EQUAL, "DELETE"),
                                                         newCondition(ParamType.URI, Operator.EQUAL, ANYTHING)
                                                 ))
+                                                .namespaceId(SYS_DEFAULT_NAMESPACE_NAMESPACE_ID)
                                                 .build()
                                 )
                                 .checker(notExists(Method.DELETE, ANYTHING))

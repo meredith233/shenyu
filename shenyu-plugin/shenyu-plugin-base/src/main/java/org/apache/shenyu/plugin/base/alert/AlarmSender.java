@@ -17,9 +17,14 @@
 
 package org.apache.shenyu.plugin.base.alert;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shenyu.common.config.ShenyuConfig;
 import org.apache.shenyu.common.dto.AlarmContent;
 import org.apache.shenyu.plugin.api.utils.SpringBeanUtils;
+
+import java.util.Date;
 import java.util.Map;
+
 
 /**
  * The alarm data sender.
@@ -47,19 +52,30 @@ public class AlarmSender {
     
     private static AlarmService alarmService;
     
+    private static Boolean enabled;
+
+    private static String namespaceId;
+    
     /**
      * Send alarm content.
      * @param alarmContent alarm content
      */
     public static void alarm(final AlarmContent alarmContent) {
+        if (StringUtils.isNotEmpty(alarmContent.getNamespaceId())) {
+            ShenyuConfig shenyuConfig = SpringBeanUtils.getInstance().getBean(ShenyuConfig.class);
+            namespaceId = shenyuConfig.getNamespace();
+            alarmContent.setNamespaceId(namespaceId);
+        }
         if (alarmService == null) {
             alarmService = SpringBeanUtils.getInstance().getBean(AlarmService.class);
         }
-        AlarmThreadPoolExecutor.getInstance().execute(() -> {
-            alarmService.alarm(alarmContent); 
-        });
+        if (enabled == null) {
+            ShenyuConfig shenyuConfig = SpringBeanUtils.getInstance().getBean(ShenyuConfig.class);
+            enabled = shenyuConfig.getAlert().getEnabled();
+        }
+        AlarmThreadPoolExecutor.getInstance().execute(() -> alarmService.alarm(alarmContent));
     }
-    
+
     /**
      * Send alarm content.
      * @param level Alarm level. 0: high-emergency-critical 1: medium-critical-critical 2: low-warning-warning
@@ -70,10 +86,11 @@ public class AlarmSender {
     public static void alarm(final byte level, final String title, final String content, final Map<String, String> labels) {
         AlarmContent alarmContent = new AlarmContent.Builder()
                                             .level(level).title(title).content(content)
-                                            .labels(labels).build();
+                                            .labels(labels).namespaceId(namespaceId)
+                                            .dateCreated(new Date()).build();
         alarm(alarmContent);
     }
-    
+
     /**
      * Send alarm content.
      * @param level Alarm level. 0: high-emergency-critical 1: medium-critical-critical 2: low-warning-warning
@@ -83,10 +100,11 @@ public class AlarmSender {
     public static void alarm(final byte level, final String title, final String content) {
         AlarmContent alarmContent = new AlarmContent.Builder()
                                             .level(level).title(title)
-                                            .content(content).build();
+                                            .content(content).namespaceId(namespaceId)
+                                            .dateCreated(new Date()).build();
         alarm(alarmContent);
     }
-    
+
     /**
      * Send high emergency level alarm content.
      * @param title Alarm title
@@ -96,10 +114,11 @@ public class AlarmSender {
     public static void alarmHighEmergency(final String title, final String content, final Map<String, String> labels) {
         AlarmContent alarmContent = new AlarmContent.Builder()
                                             .level((byte) 0).title(title).content(content)
-                                            .labels(labels).build();
+                                            .labels(labels).namespaceId(namespaceId)
+                                            .dateCreated(new Date()).build();
         alarm(alarmContent);
     }
-    
+
     /**
      * Send medium critical level alarm content.
      * @param title Alarm title
@@ -109,10 +128,11 @@ public class AlarmSender {
     public static void alarmMediumCritical(final String title, final String content, final Map<String, String> labels) {
         AlarmContent alarmContent = new AlarmContent.Builder()
                                             .level((byte) 1).title(title).content(content)
-                                            .labels(labels).build();
+                                            .labels(labels).namespaceId(namespaceId)
+                                            .dateCreated(new Date()).build();
         alarm(alarmContent);
     }
-    
+
     /**
      * Send low warning level alarm content.
      * @param title Alarm title
@@ -122,7 +142,8 @@ public class AlarmSender {
     public static void alarmLowWarning(final String title, final String content, final Map<String, String> labels) {
         AlarmContent alarmContent = new AlarmContent.Builder()
                                             .level((byte) 2).title(title).content(content)
-                                            .labels(labels).build();
+                                            .labels(labels).namespaceId(namespaceId)
+                                            .dateCreated(new Date()).build();
         alarm(alarmContent);
     }
 }

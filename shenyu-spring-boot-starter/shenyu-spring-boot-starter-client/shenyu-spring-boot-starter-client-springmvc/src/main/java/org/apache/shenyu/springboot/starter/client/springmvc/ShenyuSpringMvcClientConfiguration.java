@@ -17,25 +17,26 @@
 
 package org.apache.shenyu.springboot.starter.client.springmvc;
 
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shenyu.client.auto.config.ClientRegisterConfiguration;
 import org.apache.shenyu.client.core.constant.ShenyuClientConstants;
-import org.apache.shenyu.client.core.register.ClientDiscoveryConfigRefreshedEventListener;
+import org.apache.shenyu.client.core.register.ClientRegisterConfig;
+import org.apache.shenyu.client.core.register.ClientRegisterConfigImpl;
 import org.apache.shenyu.client.springmvc.init.SpringMvcClientEventListener;
 import org.apache.shenyu.common.enums.RpcTypeEnum;
 import org.apache.shenyu.common.utils.VersionUtils;
 import org.apache.shenyu.register.client.api.ShenyuClientRegisterRepository;
-import org.apache.shenyu.register.client.http.HttpClientRegisterRepository;
 import org.apache.shenyu.register.common.config.ShenyuClientConfig;
 import org.apache.shenyu.register.common.config.ShenyuClientConfig.ClientPropertiesConfig;
-import org.apache.shenyu.register.common.config.ShenyuDiscoveryConfig;
 import org.apache.shenyu.springboot.starter.client.common.config.ShenyuClientCommonBeanConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 
 import java.util.Properties;
@@ -53,12 +54,12 @@ public class ShenyuSpringMvcClientConfiguration {
     }
 
     /**
-     * Spring mvc client bean post processor.
+     * Spring mvc client event listener.
      *
      * @param clientConfig                   the client config
      * @param shenyuClientRegisterRepository the shenyu client register repository
      * @param env                            the env
-     * @return the spring mvc client bean post processor
+     * @return the spring mvc client event listener
      */
     @Bean
     @ConditionalOnMissingBean(ClientRegisterConfiguration.class)
@@ -66,11 +67,14 @@ public class ShenyuSpringMvcClientConfiguration {
                                                                       final ShenyuClientRegisterRepository shenyuClientRegisterRepository,
                                                                       final Environment env) {
         ClientPropertiesConfig clientPropertiesConfig = clientConfig.getClient().get(RpcTypeEnum.HTTP.getName());
-        Properties props = clientPropertiesConfig == null ? null : clientPropertiesConfig.getProps();
+        Properties props = Optional.ofNullable(clientPropertiesConfig).map(ClientPropertiesConfig::getProps).orElse(null);
         String applicationName = env.getProperty("spring.application.name");
-        String discoveryMode = env.getProperty("shenyu.discovery.mode", ShenyuClientConstants.DISCOVERY_LOCAL_MODE);
+        String discoveryMode = env.getProperty("shenyu.discovery.type", ShenyuClientConstants.DISCOVERY_LOCAL_MODE);
         if (props != null) {
             String appName = props.getProperty(ShenyuClientConstants.APP_NAME);
+            if (StringUtils.isBlank(appName) && StringUtils.isBlank(applicationName)) {
+                throw new IllegalArgumentException("spring.application.name or shenyu.client.http.props.appName must not be empty");
+            }
             if (StringUtils.isBlank(appName)) {
                 props.setProperty(ShenyuClientConstants.APP_NAME, applicationName);
             }
@@ -80,21 +84,23 @@ public class ShenyuSpringMvcClientConfiguration {
             }
             props.setProperty(ShenyuClientConstants.DISCOVERY_LOCAL_MODE_KEY, Boolean.valueOf(ShenyuClientConstants.DISCOVERY_LOCAL_MODE.equals(discoveryMode)).toString());
         }
-        return new SpringMvcClientEventListener(clientPropertiesConfig, shenyuClientRegisterRepository, env);
+        return new SpringMvcClientEventListener(clientConfig, shenyuClientRegisterRepository, env);
     }
 
     /**
-     * clientDiscoveryConfigRefreshedEventListener Bean.
+     * ClientRegisterConfig Bean.
      *
-     * @param shenyuDiscoveryConfig        shenyuDiscoveryConfig
-     * @param httpClientRegisterRepository httpClientRegisterRepository
-     * @return ClientDiscoveryConfigRefreshedEventListener
+     * @param shenyuClientConfig shenyuClientConfig
+     * @param applicationContext applicationContext
+     * @param env                env
+     * @return clientRegisterConfig
      */
-    @Bean
-    @ConditionalOnProperty(prefix = "shenyu.discovery", name = "serverList", matchIfMissing = false)
-    @ConditionalOnBean(ShenyuDiscoveryConfig.class)
-    public ClientDiscoveryConfigRefreshedEventListener clientDiscoveryConfigRefreshedEventListener(final ShenyuDiscoveryConfig shenyuDiscoveryConfig,
-                                                                                                   final HttpClientRegisterRepository httpClientRegisterRepository) {
-        return new ClientDiscoveryConfigRefreshedEventListener(shenyuDiscoveryConfig, httpClientRegisterRepository);
+    @Bean("springMvcClientRegisterConfig")
+    @Primary
+    public ClientRegisterConfig clientRegisterConfig(final ShenyuClientConfig shenyuClientConfig,
+                                                     final ApplicationContext applicationContext,
+                                                     final Environment env) {
+        return new ClientRegisterConfigImpl(shenyuClientConfig, RpcTypeEnum.HTTP, applicationContext, env);
     }
+
 }
